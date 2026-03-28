@@ -1,94 +1,27 @@
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:quick_jobs/models/auth_response.dart';
 import 'package:quick_jobs/models/login_result.dart';
-import 'package:quick_jobs/models/user.dart' as app_user;
+import 'package:quick_jobs/services/supabase_service.dart';
 
 class AuthService {
-  static const String _baseUrl = 'https://api.rmutsv.ac.th/elogin';
-
-  Future<LoginResult> login(
-    String username,
-    String password, {
-    required String role,
-  }) async {
-    final normalizedRole = role.toLowerCase();
-
-    if (normalizedRole == 'professor') {
-      // Strict professor login validation
-      if (username.trim().toLowerCase() == 'professor' &&
-          password == '123456') {
-        final user = app_user.User.fakeProfessor();
+  Future<LoginResult> login(String username, String password) async {
+    try {
+      final user = await SupabaseService().getUserByUsernameAndPassword(
+        username,
+        password,
+      );
+      if (user != null) {
+        String role = user.role; // ดึง role จาก user
+        // ใช้ role ต่อได้เลย เช่น
+        if (role == 'student') {
+          // ทำอะไรสำหรับนักศึกษา
+        } else if (role == 'professor') {
+          // ทำอะไรสำหรับอาจารย์
+        }
         return LoginResult(user: user, message: 'success');
       } else {
-        return LoginResult(
-          user: null,
-          message:
-              'Invalid professor credentials. Username must be "professor" and password must be "123456"',
-        );
-      }
-    }
-
-    if (normalizedRole == 'student') {
-      // Student login via RMUTSV API
-      try {
-        final body = {
-          'username': username,
-          'password': password,
-          'role': 'student',
-        };
-        final response = await http.post(
-          Uri.parse(_baseUrl),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode(body),
-        );
-
-        if (response.statusCode != 200) {
-          return LoginResult(
-            user: null,
-            message: 'Network error ${response.statusCode}',
-          );
-        }
-
-        final jsonResponse = jsonDecode(response.body);
-        final authResponse = AuthResponse.fromJson(jsonResponse);
-
-        if (authResponse.status != 'ok') {
-          return LoginResult(
-            user: null,
-            message: 'Login failed: ${authResponse.status}',
-          );
-        }
-
-        final user = app_user.User.fromAuthResponse(authResponse);
-        return LoginResult(user: user, message: 'success');
-      } catch (e) {
-        return LoginResult(user: null, message: 'Exception: $e');
-      }
-    }
-
-    // Invalid role
-    return LoginResult(user: null, message: 'Invalid role specified');
-  }
-
-  // Token Verification API awjdjaswdjawjdlaiwdejailwjdawdil
-  Future<app_user.User?> verifyToken(String token) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$_baseUrl/token/token?token=$token'),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        final authResponse = AuthResponse.fromJson(jsonResponse);
-        if (authResponse.status == 'ok') {
-          return app_user.User.fromAuthResponse(authResponse);
-        }
+        return LoginResult(user: null, message: 'Invalid username or password');
       }
     } catch (e) {
-      // Handle error
+      return LoginResult(user: null, message: 'ติดต่อดาต้าเบสไม่ได้');
     }
-    return null;
   }
 }

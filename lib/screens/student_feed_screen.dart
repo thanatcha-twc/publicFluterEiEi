@@ -5,7 +5,6 @@ import 'package:quick_jobs/providers/job_provider.dart';
 import 'package:quick_jobs/widgets/job_card.dart';
 import 'package:quick_jobs/screens/student_profile_screen.dart';
 import 'package:quick_jobs/screens/applied_jobs_screen.dart';
-import 'package:quick_jobs/screens/job_detail_screen.dart';
 import 'package:quick_jobs/screens/role_selection_screen.dart';
 import 'package:quick_jobs/models/job_post.dart';
 
@@ -208,19 +207,7 @@ class _StudentFeedScreenState extends State<StudentFeedScreen> {
                           final job = _filteredJobs[index];
                           return JobCard(
                             job: job,
-                            isProfessor: false,
                             hasApplied: _appliedJobs[job.id] ?? false,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => JobDetailScreen(
-                                    job: job,
-                                    isProfessor: false,
-                                  ),
-                                ),
-                              );
-                            },
                             onApply: () {
                               jobProvider
                                   .applyForJob(authProvider.user!.id, job.id)

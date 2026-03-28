@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:quick_jobs/screens/login_screen.dart';
 import 'package:quick_jobs/providers/auth_provider.dart';
 import 'package:quick_jobs/providers/job_provider.dart';
-import 'package:quick_jobs/screens/role_selection_screen.dart';
 import 'package:quick_jobs/screens/professor_feed_screen.dart';
 import 'package:quick_jobs/screens/student_feed_screen.dart';
 import 'package:quick_jobs/services/supabase_service.dart';
@@ -51,16 +51,21 @@ class _MyAppState extends State<MyApp> {
         ),
         home: Consumer<AuthProvider>(
           builder: (context, authProvider, child) {
-            // If user is already authenticated, go directly to appropriate screen
             if (authProvider.isAuthenticated) {
-              if (authProvider.isProfessor) {
+              // ดึง role จาก user
+              final role = authProvider.user?.role;
+              if (role == 'professor') {
                 return const ProfessorFeedScreen();
-              } else {
+              } else if (role == 'student') {
                 return const StudentFeedScreen();
+              } else {
+                return const Scaffold(
+                  body: Center(child: Text('Unknown role')),
+                );
               }
             }
-            // Otherwise, show role selection
-            return const RoleSelectionScreen();
+            // ถ้ายังไม่ login
+            return const LoginScreen();
           },
         ),
       ),

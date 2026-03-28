@@ -23,36 +23,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final Color primary = const Color(0xFF2B2EC7);
 
   Future<void> _login() async {
-    final role = widget.role;
-    if (role == null || role.isEmpty) {
-      setState(() {
-        _errorMessage = 'เกิดข้อผิดพลาด: ระบุบทบาทก่อนเข้าสู่ระบบ';
-      });
-      return;
-    }
-
     if (_usernameController.text.trim().isEmpty ||
         _passwordController.text.trim().isEmpty) {
       setState(() {
         _errorMessage = 'กรุณากรอก Username และ Password ให้ครบถ้วน';
       });
       return;
-    }
-
-    // Additional validation for professor role
-    if (role.toLowerCase() == 'professor') {
-      if (_usernameController.text.trim().toLowerCase() != 'professor') {
-        setState(() {
-          _errorMessage = 'Username สำหรับอาจารย์ต้องเป็น "professor"';
-        });
-        return;
-      }
-      if (_passwordController.text != '123456') {
-        setState(() {
-          _errorMessage = 'Password สำหรับอาจารย์ต้องเป็น "123456"';
-        });
-        return;
-      }
     }
 
     FocusScope.of(context).unfocus();
@@ -64,8 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.login(
       _usernameController.text.trim(),
-      _passwordController.text,
-      role,
+      _passwordController.text.trim(),
     );
 
     if (!mounted) return;
@@ -161,7 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'Password',
+                          'password',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w800,

@@ -3,11 +3,16 @@ class JobPost {
   final String professorId;
   final String title;
   final String description;
-  final String status; // 'open', 'closed', 'completed'
+  final String status;
   final DateTime createdAt;
-  final DateTime? updatedAt;
+
+  final String? professorName;
   final String? requirements;
   final double? credits;
+  final double? salary;
+  final int? maxApplicants;
+  final int? currentApplicants;
+  final DateTime? deadline;
 
   JobPost({
     required this.id,
@@ -16,9 +21,13 @@ class JobPost {
     required this.description,
     required this.status,
     required this.createdAt,
-    this.updatedAt,
+    this.professorName,
     this.requirements,
     this.credits,
+    this.salary,
+    this.maxApplicants,
+    this.currentApplicants,
+    this.deadline,
   });
 
   factory JobPost.fromJson(Map<String, dynamic> json) {
@@ -29,11 +38,19 @@ class JobPost {
       description: json['description'],
       status: json['status'],
       createdAt: DateTime.parse(json['created_at']),
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'])
-          : null,
+      professorName: json['professor_name'] ?? json['professor']?['name'],
       requirements: json['requirements'],
-      credits: json['credits']?.toDouble(),
+      credits: json['credits'] == null
+          ? null
+          : (json['credits'] is double
+                ? json['credits']
+                : double.tryParse(json['credits'].toString())),
+      salary: json['salary']?.toDouble(),
+      maxApplicants: json['max_applicants'],
+      currentApplicants: json['current_applicants'],
+      deadline: json['deadline'] != null
+          ? DateTime.parse(json['deadline'])
+          : null,
     );
   }
 
@@ -45,9 +62,13 @@ class JobPost {
       'description': description,
       'status': status,
       'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt?.toIso8601String(),
+      'professor_name': professorName,
       'requirements': requirements,
       'credits': credits,
+      'salary': salary,
+      'max_applicants': maxApplicants,
+      'current_applicants': currentApplicants,
+      'deadline': deadline?.toIso8601String(),
     };
   }
 }

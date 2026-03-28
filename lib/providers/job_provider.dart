@@ -34,7 +34,7 @@ class JobProvider with ChangeNotifier {
       _jobPosts.insert(0, newJobPost);
       notifyListeners();
     } catch (e) {
-      print('[JobProvider] createJobPost error: $e');
+      debugPrint('[JobProvider] createJobPost error: $e');
       rethrow;
     }
   }

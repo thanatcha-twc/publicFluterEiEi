@@ -4,8 +4,6 @@ import 'package:quick_jobs/providers/auth_provider.dart';
 import 'package:quick_jobs/providers/job_provider.dart';
 import 'package:quick_jobs/widgets/job_card.dart';
 import 'package:quick_jobs/screens/create_edit_job_screen.dart';
-import 'package:quick_jobs/screens/role_selection_screen.dart';
-import 'package:quick_jobs/screens/job_detail_screen.dart';
 
 class ProfessorFeedScreen extends StatefulWidget {
   const ProfessorFeedScreen({super.key});
@@ -23,32 +21,6 @@ class _ProfessorFeedScreenState extends State<ProfessorFeedScreen> {
     if (authProvider.isProfessor) {
       jobProvider.loadJobPosts(professorId: authProvider.user!.id);
     }
-  }
-
-  void _deleteJob(BuildContext context, String jobId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Job'),
-        content: const Text('Are you sure you want to delete this job?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Provider.of<JobProvider>(
-                context,
-                listen: false,
-              ).deleteJobPost(jobId);
-              Navigator.pop(context);
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -98,7 +70,7 @@ class _ProfessorFeedScreenState extends State<ProfessorFeedScreen> {
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            Text('Email: ${authProvider.user?.email ?? ''}'),
+            Text('username: ${authProvider.user?.username ?? ''}'),
             const SizedBox(height: 20),
             const Text(
               'Your Posted Jobs:',
@@ -114,28 +86,8 @@ class _ProfessorFeedScreenState extends State<ProfessorFeedScreen> {
                         final job = jobProvider.jobPosts[index];
                         return JobCard(
                           job: job,
-                          isProfessor: true,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => JobDetailScreen(
-                                  job: job,
-                                  isProfessor: true,
-                                ),
-                              ),
-                            );
-                          },
-                          onEdit: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    CreateEditJobScreen(jobToEdit: job),
-                              ),
-                            );
-                          },
-                          onDelete: () => _deleteJob(context, job.id),
+                          hasApplied: false,
+                          onApply: () {},
                         );
                       },
                     ),

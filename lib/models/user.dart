@@ -2,7 +2,7 @@ import 'auth_response.dart';
 
 class User {
   final String id;
-  final String email;
+  final String username;
   final String name;
   final String role; // 'student' or 'professor'
   final String? token;
@@ -11,7 +11,7 @@ class User {
 
   User({
     required this.id,
-    required this.email,
+    required this.username,
     required this.name,
     required this.role,
     this.token,
@@ -19,37 +19,24 @@ class User {
     this.department,
   });
 
-  factory User.fromAuthResponse(AuthResponse response) {
-    return User(
-      id: response.cid ?? '',
-      email: response.email ?? '',
-      name: response.name ?? '',
-      role: response.type?.toLowerCase().contains('professor') == true
-          ? 'professor'
-          : 'student',
-      token: response.token,
-      faculty: response.facname,
-      department: response.depname,
-    );
-  }
-
-  // For fake professor login
-  factory User.fakeProfessor() {
-    return User(
-      id: 'professor_001',
-      email: 'professor@example.com',
-      name: 'Professor Example',
-      role: 'professor',
-      token: 'fake_token',
-      faculty: 'Engineering',
-      department: 'Computer Science',
-    );
-  }
+  // factory User.fromAuthResponse(AuthResponse response) {
+  //   return User(
+  //     id: response.cid ?? '',
+  //     username: response.username ?? '',
+  //     name: response.name ?? '',
+  //     role: response.type?.toLowerCase().contains('professor') == true
+  //         ? 'professor'
+  //         : 'student',
+  //     token: response.token,
+  //     faculty: response.facname,
+  //     department: response.depname,
+  //   );
+  // }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'email': email,
+      'username': username,
       'name': name,
       'role': role,
       'token': token,
@@ -61,7 +48,7 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'],
-      email: json['email'],
+      username: json['username'],
       name: json['name'],
       role: json['role'],
       token: json['token'],

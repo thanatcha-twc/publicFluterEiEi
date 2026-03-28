@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:quick_jobs/models/user.dart' as app_user;
 import 'package:quick_jobs/models/job_post.dart';
@@ -13,14 +14,19 @@ class SupabaseService {
   }
 
   // Users
-  Future<app_user.User?> getUser(String id) async {
+  Future<app_user.User?> getUserByUsernameAndPassword(
+    String username,
+    String password,
+  ) async {
+    print('username: "$username" password: "$password"');
     final response = await _supabase
         .from('users')
         .select()
-        .eq('id', id)
-        .single();
-
-    if (response.isNotEmpty) {
+        .eq('username', username)
+        .eq('password', password)
+        .maybeSingle();
+    print('response: $response');
+    if (response != null) {
       return app_user.User.fromJson(response);
     }
     return null;
@@ -38,7 +44,7 @@ class SupabaseService {
       if (e.toString().contains('duplicate') ||
           e.toString().contains('23505')) {
         // Unique constraint violation - user already exists, ignore
-        print('[SupabaseService] User ${user.id} already exists');
+        debugPrint('[SupabaseService] User ${user.id} already exists');
       } else {
         rethrow; // Other errors should be raised
       }

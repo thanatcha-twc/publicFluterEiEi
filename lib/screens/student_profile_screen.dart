@@ -44,7 +44,7 @@ class StudentProfileScreen extends StatelessWidget {
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            Text('Email: ${authProvider.user?.email ?? ''}'),
+            Text('username: ${authProvider.user?.username ?? ''}'),
             Text('Faculty: ${authProvider.user?.faculty ?? ''}'),
             Text('Department: ${authProvider.user?.department ?? ''}'),
             const SizedBox(height: 20),

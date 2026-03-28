@@ -52,15 +52,16 @@ class _CreateEditJobScreenState extends State<CreateEditJobScreen> {
           ? null
           : _requirementsController.text,
       credits: double.tryParse(_creditsController.text),
+      professorName: authProvider.user?.name ?? '',
     );
 
     try {
-      print(
+      debugPrint(
         '[JOB] saving job: title=${jobPost.title}, professorId=${jobPost.professorId}',
       );
       if (widget.jobToEdit == null) {
         await jobProvider.createJobPost(jobPost);
-        print('[JOB] job created successfully');
+        debugPrint('[JOB] job created successfully');
       } else {
         await jobProvider.updateJobPost(widget.jobToEdit!.id, {
           'title': jobPost.title,
@@ -68,7 +69,7 @@ class _CreateEditJobScreenState extends State<CreateEditJobScreen> {
           'requirements': jobPost.requirements,
           'credits': jobPost.credits,
         });
-        print('[JOB] job updated successfully');
+        debugPrint('[JOB] job updated successfully');
       }
 
       if (!mounted) return;
@@ -77,7 +78,7 @@ class _CreateEditJobScreenState extends State<CreateEditJobScreen> {
       ).showSnackBar(const SnackBar(content: Text('Job saved successfully!')));
       Navigator.pop(context);
     } catch (e) {
-      print('[JOB] ERROR: $e');
+      debugPrint('[JOB] ERROR: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),

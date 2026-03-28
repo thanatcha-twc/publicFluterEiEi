@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:quick_jobs/models/user.dart' as app_user;
 import 'package:quick_jobs/services/auth_service.dart';
+import 'package:quick_jobs/services/supabase_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -18,15 +19,21 @@ class AuthProvider with ChangeNotifier {
 
   final AuthService _authService = AuthService();
 
-  Future<void> login(String username, String password, String role) async {
+  Future<void> login(String username, String password) async {
     _isLoading = true;
     _errorMessage = '';
     notifyListeners();
 
     try {
-      final result = await _authService.login(username, password, role: role);
+      final result = await _authService.login(username, password);
       if (result.success && result.user != null) {
         _user = result.user;
+        // เพิ่ม: บันทึก user ลง Supabase ทุกครั้งหลัง login สำเร็จ
+        try {
+          await SupabaseService().ensureUserExists(_user!);
+        } catch (e) {
+          debugPrint('[AuthProvider] Failed to ensure user exists: $e');
+        }
         await _saveUserToPrefs(_user!);
       } else {
         _errorMessage = result.message;
