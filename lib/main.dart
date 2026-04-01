@@ -1,74 +1,71 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
-import 'package:quick_jobs/screens/login_screen.dart';
-import 'package:quick_jobs/providers/auth_provider.dart';
-import 'package:quick_jobs/providers/job_provider.dart';
-import 'package:quick_jobs/screens/professor_feed_screen.dart';
-import 'package:quick_jobs/screens/student_feed_screen.dart';
-import 'package:quick_jobs/services/supabase_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'config/supabase_config.dart';
+import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Supabase
-  await SupabaseService.initialize();
+  await Supabase.initialize(
+    url: SupabaseConfig.url,
+    anonKey: SupabaseConfig.anonKey,
+  );
 
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    super.initState();
-    // Check authentication status on app start
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      authProvider.checkAuthStatus();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => JobProvider()),
-      ],
-      child: MaterialApp(
-        title: 'Quick Jobs',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-          fontFamily: GoogleFonts.poppins().fontFamily,
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+
+      theme: ThemeData(
+        fontFamily: 'Poppins',
+
+        scaffoldBackgroundColor: const Color(0xFFF5F6FA),
+
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2B2EC7)),
+
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(color: Color(0xFF2B2EC7)),
         ),
-        home: Consumer<AuthProvider>(
-          builder: (context, authProvider, child) {
-            if (authProvider.isAuthenticated) {
-              // ดึง role จาก user
-              final role = authProvider.user?.role;
-              if (role == 'professor') {
-                return const ProfessorFeedScreen();
-              } else if (role == 'student') {
-                return const StudentFeedScreen();
-              } else {
-                return const Scaffold(
-                  body: Center(child: Text('Unknown role')),
-                );
-              }
-            }
-            // ถ้ายังไม่ login
-            return const LoginScreen();
-          },
+
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.black,
+          elevation: 0,
+        ),
+
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF3B3DBF),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          hintStyle: const TextStyle(color: Colors.grey),
         ),
       ),
+
+      home: const LoginScreen(),
     );
   }
 }

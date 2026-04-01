@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:quick_jobs/providers/auth_provider.dart';
-import 'package:quick_jobs/screens/professor_feed_screen.dart';
-import 'package:quick_jobs/screens/student_feed_screen.dart';
+import '../services/auth_service.dart';
+import 'teacher/teacher_jobs_screen.dart';
+import '../screens/student/job_feed_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  final String? role;
-
-  const LoginScreen({super.key, this.role});
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -17,8 +14,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  final AuthService _authService = AuthService();
+
+  bool isLoading = false;
+  String error = '';
   bool _obscurePassword = true;
-  String _errorMessage = '';
 
   final Color primary = const Color(0xFF2B2EC7);
 
@@ -26,7 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_usernameController.text.trim().isEmpty ||
         _passwordController.text.trim().isEmpty) {
       setState(() {
-        _errorMessage = 'กรุณากรอก Username และ Password ให้ครบถ้วน';
+        error = 'กรุณากรอกข้อมูลให้ครบ';
       });
       return;
     }
@@ -34,42 +34,48 @@ class _LoginScreenState extends State<LoginScreen> {
     FocusScope.of(context).unfocus();
 
     setState(() {
-      _errorMessage = '';
+      isLoading = true;
+      error = '';
     });
 
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    await authProvider.login(
+    final user = await _authService.login(
       _usernameController.text.trim(),
       _passwordController.text.trim(),
     );
 
     if (!mounted) return;
 
-    if (authProvider.isAuthenticated) {
-      if (authProvider.isProfessor) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const ProfessorFeedScreen()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const StudentFeedScreen()),
-        );
-      }
-    } else {
+    setState(() {
+      isLoading = false;
+    });
+
+    if (user == null) {
       setState(() {
-        _errorMessage = authProvider.errorMessage.isNotEmpty
-            ? authProvider.errorMessage
-            : 'เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบข้อมูล';
+        error = 'Login ไม่สำเร็จ';
       });
+      return;
+    }
+
+    // 🔥 routing เดิม (ไม่แตะ logic)
+    if (user.role == 'student') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => JobFeedScreen(studentId: user.id)),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => TeacherJobsScreen(teacherId: user.id),
+        ),
+      );
     }
   }
 
   InputDecoration _inputDecoration(String hint, {Widget? suffix}) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: const Color(0xFFCFCFCF), letterSpacing: 2),
+      hintStyle: const TextStyle(color: Color(0xFFCFCFCF), letterSpacing: 1),
       filled: true,
       fillColor: Colors.white,
       suffixIcon: suffix,
@@ -89,6 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F5FA),
+
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -102,6 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // 🔥 LOGO
                       SizedBox(
                         width: 200,
                         height: 110,
@@ -111,15 +119,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
 
-                      Align(
+                      // 🔹 Username
+                      const Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           'e-Passport',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -127,19 +136,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       TextField(
                         controller: _usernameController,
-                        enabled: !Provider.of<AuthProvider>(context).isLoading,
+                        enabled: !isLoading,
                         decoration: _inputDecoration('e-Passport'),
                       ),
 
                       const SizedBox(height: 20),
 
-                      Align(
+                      // 🔹 Password
+                      const Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'password',
-                          style: const TextStyle(
+                          'Password',
+                          style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -147,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       TextField(
                         controller: _passwordController,
-                        enabled: !Provider.of<AuthProvider>(context).isLoading,
+                        enabled: !isLoading,
                         obscureText: _obscurePassword,
                         decoration: _inputDecoration(
                           '••••••••',
@@ -166,9 +176,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 30),
 
-                      if (_errorMessage.isNotEmpty)
+                      // 🔥 ERROR
+                      if (error.isNotEmpty)
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(12),
@@ -179,7 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             border: Border.all(color: Colors.red.shade200),
                           ),
                           child: Text(
-                            _errorMessage,
+                            error,
                             style: TextStyle(
                               color: Colors.red.shade700,
                               fontWeight: FontWeight.w500,
@@ -187,14 +198,12 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
 
+                      // 🔥 BUTTON
                       SizedBox(
                         width: double.infinity,
                         height: 56,
                         child: ElevatedButton(
-                          onPressed:
-                              Provider.of<AuthProvider>(context).isLoading
-                              ? null
-                              : () async => await _login(),
+                          onPressed: isLoading ? null : _login,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: primary,
                             shape: RoundedRectangleBorder(
@@ -202,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             elevation: 0,
                           ),
-                          child: Provider.of<AuthProvider>(context).isLoading
+                          child: isLoading
                               ? const SizedBox(
                                   height: 24,
                                   width: 24,
